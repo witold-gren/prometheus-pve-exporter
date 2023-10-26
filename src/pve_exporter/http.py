@@ -51,11 +51,10 @@ class PveExporterApplication:
 
         return response
 
-    def on_metrics(self):
+    def on_metrics(self, module='default', target='localhost', cluster='1', node='1'):
         """
         Request handler for /metrics route
         """
-
         if module in self._config:
             start = time.time()
             output = collect_pve(
@@ -65,15 +64,13 @@ class PveExporterApplication:
                 node.lower() not in ['false', '0', ''],
                 self._collectors
             )
-            response = Response(output)
+            response = Response(generate_latest() + output)
             response.headers['content-type'] = CONTENT_TYPE_LATEST
             self._duration.labels(module).observe(time.time() - start)
         else:
-            # response = Response(output)
-            # response.headers['content-type'] = CONTENT_TYPE_LATEST
             response = Response("Module '{module}' not found in config")
             response.status_code = 400
-
+            
         return response
 
     def on_index(self):
