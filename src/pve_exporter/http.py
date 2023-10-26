@@ -56,8 +56,21 @@ class PveExporterApplication:
         Request handler for /metrics route
         """
 
-        response = Response(generate_latest())
-        response.headers['content-type'] = CONTENT_TYPE_LATEST
+        if module in self._config:
+            start = time.time()
+            output = collect_pve(
+                self._config[module],
+                target,
+                cluster.lower() not in ['false', '0', ''],
+                node.lower() not in ['false', '0', ''],
+                self._collectors
+            )
+            response = Response(output + generate_latest())
+            response.headers['content-type'] = CONTENT_TYPE_LATEST
+            self._duration.labels(module).observe(time.time() - start)
+        else:
+            response = Response(output)
+            response.headers['content-type'] = CONTENT_TYPE_LATEST
 
         return response
 
@@ -70,7 +83,7 @@ class PveExporterApplication:
             """<html>
             <head><title>Proxmox VE Exporter</title></head>
             <body>
-            <h1>Proxmox VE Exporter</h1>
+            <h1>Proxmox VE Exporter - custom changes</h1>
             <p>Visit <code>/pve?target=1.2.3.4</code> to use.</p>
             </body>
             </html>"""
