@@ -65,12 +65,14 @@ class PveExporterApplication:
                 node.lower() not in ['false', '0', ''],
                 self._collectors
             )
-            response = Response(output + generate_latest())
+            response = Response(output)
             response.headers['content-type'] = CONTENT_TYPE_LATEST
             self._duration.labels(module).observe(time.time() - start)
         else:
-            response = Response(output)
-            response.headers['content-type'] = CONTENT_TYPE_LATEST
+            # response = Response(output)
+            # response.headers['content-type'] = CONTENT_TYPE_LATEST
+            response = Response("Module '{module}' not found in config")
+            response.status_code = 400
 
         return response
 
