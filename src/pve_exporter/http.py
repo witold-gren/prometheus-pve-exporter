@@ -64,7 +64,7 @@ class PveExporterApplication:
                 node.lower() not in ['false', '0', ''],
                 self._collectors
             )
-            response = Response(generate_latest() + output)
+            response = Response(output)
             response.headers['content-type'] = CONTENT_TYPE_LATEST
             self._duration.labels(module).observe(time.time() - start)
         else:
